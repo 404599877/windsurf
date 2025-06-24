@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        #testButton {
+            padding: 20px 40px;
+            font-size: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px;
+        }
+        #testButton:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 30px;
+            font-size: 24px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>JavaScript测试页面</h1>
+    <button id="testButton">点击测试JavaScript</button>
+    <div id="result">等待测试结果...</div>
+
+    <script>
+        // 测试JavaScript是否正常工作
+        document.getElementById('testButton').addEventListener('click', function() {
+            // 测试事件处理
+            document.getElementById('result').textContent = 'JavaScript正常工作！';
+            
+            // 测试DOM操作
+            const button = document.getElementById('testButton');
+            button.style.backgroundColor = '#8BC34A';
+            
+            // 测试计时器
+            setTimeout(() => {
+                button.style.backgroundColor = '#4CAF50';
+            }, 1000);
+        });
+
+        // 测试画布支持
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+            document.getElementById('result').textContent += '\n画布支持正常！';
+        }
+    </script>
+</body>
+</html>
