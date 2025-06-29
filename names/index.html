@@ -5,6 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Destiny Name Compatibility - Professional Name Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 60%;
+            max-width: 500px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .close {
+            float: right;
+            cursor: pointer;
+            font-size: 24px;
+            color: #666;
+        }
+        .close:hover {
+            color: #333;
+        }
+
+        /* 保存按钮样式 */
+        .save-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+
+        .save-btn:hover {
+            background-color: #45a049;
+        }
+
+        /* 表单验证样式 */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        .error {
+            color: #ff4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 90%;
+                margin: 10% auto;
+            }
+        }
+    </style>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body class="bg-gray-50">
@@ -32,13 +119,13 @@
                 <h1 class="text-4xl md:text-6xl font-bold mb-6">Discover Your Perfect Name</h1>
                 <p class="text-xl mb-8">Combining Eastern Mysticism and Western Astrology for Ultimate Name Compatibility</p>
                 <div class="max-w-md mx-auto">
-                    <form id="nameForm" class="space-y-4" action="javascript:void(0)" method="POST">
+                    <form id="nameForm" class="space-y-4 w-full max-w-md mx-auto">
                         <div>
-                            <input type="text" id="surname" placeholder="Enter your surname" class="w-full p-3 rounded-lg bg-white text-gray-800" required>
+                            <input type="text" id="surname" placeholder="Enter your surname" class="w-full p-3 rounded-lg bg-white text-gray-800">
                         </div>
                         <div class="grid grid-cols-3 gap-4">
                             <div>
-                                <select id="year" class="w-full p-3 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-blue-600 focus:outline-none" required>
+                                <select id="year" class="w-full p-3 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-blue-600 focus:outline-none">
                                     <option value="" disabled selected>Year</option>
                                     <option value="2025">2025</option>
                                     <option value="2024">2024</option>
@@ -144,7 +231,7 @@
                                 </select>
                             </div>
                             <div>
-                                <select id="month" class="w-full p-3 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-blue-600 focus:outline-none" required>
+                                <select id="month" class="w-full p-3 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-blue-600 focus:outline-none">
                                     <option value="" disabled selected>Month</option>
                                     <option value="1">January</option>
                                     <option value="2">February</option>
@@ -161,7 +248,7 @@
                                 </select>
                             </div>
                             <div>
-                                <select id="day" class="w-full p-3 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-blue-600 focus:outline-none" required>
+                                <select id="day" class="w-full p-3 rounded-lg bg-white text-gray-800 focus:ring-2 focus:ring-blue-600 focus:outline-none">
                                     <option value="" disabled selected>Day</option>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -197,15 +284,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="text-center mt-4">
-    <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-        Calculate Your Destiny
-    </button>
-</div>
-                            <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-                                Calculate Your Destiny
-                            </button>
-                        </div>
+                        <button type="submit" class="w-full bg-white text-blue-600 font-bold py-3 rounded-lg hover:bg-gray-100 transition duration-200">Calculate Your Destiny</button>
                     </form>
                 </div>
             </div>
@@ -413,5 +492,27 @@
     </footer>
 
     <script src="script.js"></script>
+    <!-- 弹窗HTML结构 -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="reportContent"></div>
+        </div>
+    </div>
+    <!-- Result Modal -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>姓名分析报告</h2>
+                <button onclick="closeModal()">×</button>
+            </div>
+            <div id="reportContent" class="modal-body">
+                <!-- 报告内容将在这里显示 -->
+            </div>
+            <div class="modal-footer">
+                <button onclick="saveReportAsPDF()" class="save-btn">保存报告</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
