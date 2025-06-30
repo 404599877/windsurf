@@ -7,42 +7,42 @@ const calculateBtn = document.querySelector('form button[type="submit"]');
 
 // 计算八字五行
 function calculateBazi(year, month, day) {
-    // 这里应该是调用八字计算API或算法
+    // Here should be the API or algorithm call for Bazi calculation
     return {
-        year: '金',
-        month: '木',
-        day: '水',
-        hour: '火',
-        shen: '火土',
-        deficient: '火',
-        prosperous: '水'
+        year: 'Metal',
+        month: 'Wood',
+        day: 'Water',
+        hour: 'Fire',
+        shen: 'Fire and Earth',
+        deficient: 'Fire',
+        prosperous: 'Water'
     };
 }
 
 // 计算紫微斗数
 function calculateZiwei(year, month, day) {
-    // 这里应该是调用紫微斗数计算API或算法
+    // Here should be the API or algorithm call for Ziwei Dou Shu calculation
     return {
-        life: '天相',
-        wealth: '紫微',
-        career: '武曲',
-        migration: '天机',
-        love: '西南方',
-        major: '2025年逢天同星化禄',
-        annual: '2025年流年吉星'
+        life: 'Tian Xiang',
+        wealth: 'Zi Wei',
+        career: 'Wu Qu',
+        migration: 'Tian Ji',
+        love: 'Southwest',
+        major: '2025 Encounters Tian Tong Star Transforming into Luck',
+        annual: '2025 Yearly Auspicious Star'
     };
 }
 
 // 计算西方占星
 function calculateAstrology(year, month, day) {
-    // 这里应该是调用占星计算API或算法
+    // Here should be the API or algorithm call for Astrology calculation
     return {
-        sun: '天蝎座',
-        moon: '巨蟹座',
-        ascendant: '巨蟹',
-        lucky: '冥王星',
+        sun: 'Scorpio',
+        moon: 'Cancer',
+        ascendant: 'Cancer',
+        lucky: 'Pluto',
         lifeNumber: '7',
-        aspects: '冥王星与火星合相'
+        aspects: 'Pluto Conjunct Mars'
     };
 }
 
@@ -66,33 +66,36 @@ function calculateCompositeScore(bazi, ziwwei, astrology) {
 
 // 生成推荐名字
 function generateRecommendedNames(bazi, ziwwei, astrology) {
-    // 这里应该是调用名字生成API或算法
+    // 示例数据，实际应用中应根据八字、紫微斗数和占星结果生成
     return [
         {
-            name: '明轩',
-            rating: 9.2,
-            reasons: {
-                elements: '火土平衡',
-                ziwwei: '与天相星相生',
-                astro: '适合冥王星影响'
-            }
-        },
-        {
-            name: '子涵',
-            rating: 8.8,
-            reasons: {
-                elements: '水火相生',
-                ziwwei: '与武曲宫相合',
-                astro: '符合巨蟹上升'
-            }
-        },
-        {
-            name: '思远',
+            name: "William",
+            chineseName: "威廉",
             rating: 8.5,
             reasons: {
-                elements: '木火通明',
-                ziwwei: '与天机宫相辅',
-                astro: '适合天蝎特质'
+                elements: "Balanced with Metal and Water",
+                ziwwei: "Favorable Life Palace",
+                astro: "Harmonious with Sun Sign"
+            }
+        },
+        {
+            name: "Sophia",
+            chineseName: "索菲亚",
+            rating: 8.2,
+            reasons: {
+                elements: "Enhances Fire Element",
+                ziwwei: "Good Wealth Palace",
+                astro: "Compatible with Moon Sign"
+            }
+        },
+        {
+            name: "James",
+            chineseName: "詹姆斯",
+            rating: 7.9,
+            reasons: {
+                elements: "Strengthens Earth Element",
+                ziwwei: "Positive Career Palace",
+                astro: "Good with Ascendant"
             }
         }
     ];
@@ -180,25 +183,36 @@ function calculateDestiny() {
 
     const reportHTML = `
         <div>
-            <h3 class="font-bold text-lg">${surname} Family Name Analysis Report</h3>
+            <h3 class="font-bold text-lg">${surname} Name Analysis Report</h3>
             <p>Birth Date: ${year}-${month}-${day}</p>
             <hr class="my-2">
-            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-lg mb-6">
-                <h4 class="text-2xl font-bold mb-4">Comprehensive Fortune Score</h4>
-                <div class="flex items-center justify-between mb-4">
-                    <div class="text-4xl font-bold">${score.total}</div>
-                    <div class="text-lg">${score.rating}</div>
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-lg mb-8">
+                    <div class="flex flex-col items-center">
+                        <h4 class="text-2xl font-bold mb-4">Comprehensive Score</h4>
+                        <div class="flex flex-col items-center mb-6">
+                            <div class="text-4xl font-bold mb-2">${score.total}</div>
+                            <div class="text-lg">${score.rating}</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-6 w-full">
+                        <div class="flex flex-col items-center">
+                            <div class="text-lg font-semibold mb-1">Elements Score</div>
+                            <div class="text-2xl font-bold">${score.elements}</div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="text-lg font-semibold mb-1">Purple Star Score</div>
+                            <div class="text-2xl font-bold">${score.ziwwei}</div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="text-lg font-semibold mb-1">Astrology Score</div>
+                            <div class="text-2xl font-bold">${score.astro}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4 text-left">
-                    <div>Five Elements Score: ${score.elements}</div>
-                    <div>Purple Star Score: ${score.ziwwei}</div>
-                    <div>Astrology Score: ${score.astro}</div>
-                </div>
-            </div>
             <div class="report-body">
                 <div class="analysis-grid">
                     <div class="mb-6">
-                        <h4 class="font-bold mb-4">Five Elements Analysis</h4>
+                        <h4 class="font-bold mb-4">Elements Analysis</h4>
                         <h5 class="font-semibold mb-2">Elements Pattern</h5>
                         <ul class="pl-5 space-y-2">
                             <li>Beneficial Elements: ${bazi.shen}</li>
@@ -225,17 +239,17 @@ function calculateDestiny() {
                         </ul>
                     </div>
                     <div class="mb-6">
-                        <h4 class="font-bold mb-4">Recommended Names</h4>
+                        <h4 class="font-bold mb-4">Name Recommendations</h4>
                         <h5 class="font-semibold mb-2">Top 3 Names</h5>
                         <ul class="pl-5 space-y-2">
-                            ${recommendedNames.map(name => `<li>${name.name} (${name.rating}/10)</li>`).join('')}
+                            ${recommendedNames.map(name => `<li>${name.name} (${name.rating}/10) - ${name.chineseName}</li>`).join('')}
                         </ul>
                     </div>
                 </div>
                 <div>
                     <h4 class="font-bold mb-4">Key Considerations</h4>
                     <ul class="pl-5 space-y-2">
-                        <li>Five Elements Balance: ${recommendedNames[0].reasons.elements}</li>
+                        <li>Elements Balance: ${recommendedNames[0].reasons.elements}</li>
                         <li>Purple Star Influence: ${recommendedNames[0].reasons.ziwwei}</li>
                         <li>Zodiac Harmony: ${recommendedNames[0].reasons.astro}</li>
                     </ul>
