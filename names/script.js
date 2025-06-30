@@ -179,88 +179,66 @@ function calculateDestiny() {
     const recommendedNames = generateRecommendedNames(bazi, ziwwei, astrology);
 
     const reportHTML = `
-        <div class="text-left">
+        <div>
             <h3 class="font-bold text-lg">${surname} Family Name Analysis Report</h3>
             <p>Birth Date: ${year}-${month}-${day}</p>
             <hr class="my-2">
-
-            <!-- 综合评分 -->
             <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-lg mb-6">
                 <h4 class="text-2xl font-bold mb-4">Comprehensive Fortune Score</h4>
                 <div class="flex items-center justify-between mb-4">
                     <div class="text-4xl font-bold">${score.total}</div>
                     <div class="text-lg">${score.rating}</div>
                 </div>
-                <div class="flex justify-between">
+                <div class="grid grid-cols-2 gap-4 text-left">
                     <div>Five Elements Score: ${score.elements}</div>
                     <div>Purple Star Score: ${score.ziwwei}</div>
                     <div>Astrology Score: ${score.astro}</div>
                 </div>
             </div>
-
-            <!-- 五行分析 -->
-            <div class="mb-6">
-                <h4 class="font-bold mb-4">Five Elements Analysis</h4>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
+            <div class="report-body">
+                <div class="analysis-grid">
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-4">Five Elements Analysis</h4>
                         <h5 class="font-semibold mb-2">Elements Pattern</h5>
-                        <ul class="list-disc pl-5 space-y-2">
+                        <ul class="pl-5 space-y-2">
                             <li>Beneficial Elements: ${bazi.shen}</li>
                             <li>Deficient Element: ${bazi.deficient}</li>
                             <li>Prosperous Element: ${bazi.prosperous}</li>
                         </ul>
                     </div>
-                </div>
-            </div>
-
-            <!-- 紫微斗数 -->
-            <div class="mb-6">
-                <h4 class="font-bold mb-4">Purple Star Astrology</h4>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-4">Purple Star Astrology</h4>
                         <h5 class="font-semibold mb-2">Key Palaces</h5>
-                        <ul class="list-disc pl-5 space-y-2">
+                        <ul class="pl-5 space-y-2">
                             <li>Life Palace: ${ziwwei.life}</li>
                             <li>Wealth Palace: ${ziwwei.wealth}</li>
                             <li>Career Palace: ${ziwwei.career}</li>
                         </ul>
                     </div>
-                </div>
-            </div>
-
-            <!-- 西方占星 -->
-            <div class="mb-6">
-                <h4 class="font-bold mb-4">Western Astrology</h4>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-4">Western Astrology</h4>
                         <h5 class="font-semibold mb-2">Key Signs</h5>
-                        <ul class="list-disc pl-5 space-y-2">
+                        <ul class="pl-5 space-y-2">
                             <li>Sun Sign: ${astrology.sun}</li>
                             <li>Moon Sign: ${astrology.moon}</li>
                             <li>Ascendant: ${astrology.ascendant}</li>
                         </ul>
                     </div>
-                </div>
-            </div>
-
-            <!-- 推荐名字 -->
-            <div class="mb-6">
-                <h4 class="font-bold mb-4">Recommended Names</h4>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
+                    <div class="mb-6">
+                        <h4 class="font-bold mb-4">Recommended Names</h4>
                         <h5 class="font-semibold mb-2">Top 3 Names</h5>
-                        <ul class="list-disc pl-5 space-y-2">
+                        <ul class="pl-5 space-y-2">
                             ${recommendedNames.map(name => `<li>${name.name} (${name.rating}/10)</li>`).join('')}
                         </ul>
                     </div>
-                    <div>
-                        <h5 class="font-semibold mb-2">Key Considerations</h5>
-                        <ul class="list-disc pl-5 space-y-2">
-                            <li>Five Elements Balance: ${recommendedNames[0].reasons.elements}</li>
-                            <li>Purple Star Influence: ${recommendedNames[0].reasons.ziwwei}</li>
-                            <li>Zodiac Harmony: ${recommendedNames[0].reasons.astro}</li>
-                        </ul>
-                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Key Considerations</h4>
+                    <ul class="pl-5 space-y-2">
+                        <li>Five Elements Balance: ${recommendedNames[0].reasons.elements}</li>
+                        <li>Purple Star Influence: ${recommendedNames[0].reasons.ziwwei}</li>
+                        <li>Zodiac Harmony: ${recommendedNames[0].reasons.astro}</li>
+                    </ul>
                 </div>
             </div>
         </div>
