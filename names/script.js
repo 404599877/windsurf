@@ -210,138 +210,92 @@ function calculateDestiny() {
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 25px 0;">
-                <!-- 第一列 -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 25px 0;">
+                <!-- 第一行 -->
                 <div>
                     <!-- 元素分析 -->
-                    <div style="background: #FFF9F2; border-radius: 8px; padding: 16px; margin-bottom: 20px; border-left: 3px solid #FFB74D;">
-                        <h3 style="color: #D84315; margin: 0 0 12px 0; font-size: 15px;">Elements Analysis</h3>
-                        <ul style="margin: 0; padding-left: 18px; color: #5D4037; line-height: 1.7; font-size: 13px;">
+                    <div class="module-card">
+                        <h3>Elements Analysis</h3>
+                        <ul>
                             <li><strong>Elements Pattern</strong></li>
                             <li><strong>Beneficial Elements:</strong> ${bazi.shen}</li>
                             <li><strong>Deficient Element:</strong> ${bazi.deficient}</li>
                             <li><strong>Prosperous Element:</strong> ${bazi.prosperous}</li>
                         </ul>
                     </div>
-
+                </div>
+                <div>
                     <!-- 紫微斗数 -->
-                    <div style="background: #FFF9F2; border-radius: 8px; padding: 16px; margin-bottom: 20px; border-left: 3px solid #FFB74D;">
-                        <h3 style="color: #D84315; margin: 0 0 12px 0; font-size: 15px;">Purple Star Astrology</h3>
-                        <ul style="margin: 0; padding-left: 18px; color: #5D4037; line-height: 1.7; font-size: 13px;">
+                    <div class="module-card">
+                        <h3>Purple Star Astrology</h3>
+                        <ul>
                             <li><strong>Key Palaces</strong></li>
                             <li>Life Palace: ${ziwwei.life}</li>
                             <li>Wealth Palace: ${ziwwei.wealth}</li>
                             <li>Career Palace: ${ziwwei.career}</li>
                         </ul>
                     </div>
-
-                    <!-- 关键考量 -->
-                    <div style="background: #FFF9F2; border-radius: 8px; padding: 16px; border-left: 3px solid #FFB74D;">
-                        <h3 style="color: #D84315; margin: 0 0 12px 0; font-size: 15px;">Key Considerations</h3>
-                        <ul style="margin: 0; padding-left: 18px; color: #5D4037; line-height: 1.7; font-size: 13px;">
-                            <li>Elements Balance: ${recommendedNames[0].reasons.elements}</li>
-                            <li>Purple Star Influence: ${recommendedNames[0].reasons.ziwwei}</li>
-                            <li>Zodiac Harmony: ${recommendedNames[0].reasons.astro}</li>
-                        </ul>
-                    </div>
                 </div>
-
-                <!-- 第二列 -->
                 <div>
                     <!-- 西方占星 -->
-                    <div style="background: #FFF9F2; border-radius: 8px; padding: 16px; margin-bottom: 20px; border-left: 3px solid #FFB74D;">
-                        <h3 style="color: #D84315; margin: 0 0 12px 0; font-size: 15px;">Western Astrology</h3>
-                        <ul style="margin: 0; padding-left: 18px; color: #5D4037; line-height: 1.7; font-size: 13px;">
+                    <div class="module-card">
+                        <h3>Western Astrology</h3>
+                        <ul>
                             <li><strong>Key Signs</strong></li>
                             <li>Sun Sign: ${astrology.sun}</li>
                             <li>Moon Sign: ${astrology.moon}</li>
                             <li>Ascendant: ${astrology.ascendant}</li>
                         </ul>
                     </div>
-
+                </div>
+                <!-- 第二行 -->
+                <div>
+                    <!-- 关键考量 -->
+                    <div class="module-card">
+                        <h3>Key Considerations</h3>
+                        <ul>
+                            <li>Elements Balance: ${recommendedNames[0].reasons.elements}</li>
+                            <li>Purple Star Influence: ${recommendedNames[0].reasons.ziwwei}</li>
+                            <li>Zodiac Harmony: ${recommendedNames[0].reasons.astro}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
                     <!-- 名字推荐 -->
-                    <div style="background: #FFF9F2; border-radius: 8px; padding: 16px; margin-bottom: 20px; border-left: 3px solid #FFB74D;">
-                        <h3 style="color: #D84315; margin: 0 0 12px 0; font-size: 15px;">Name Recommendations</h3>
-                        <ul style="margin: 0; padding-left: 18px; color: #5D4037; line-height: 1.7; font-size: 13px;">
+                    <div class="module-card">
+                        <h3>Name Recommendations</h3>
+                        <ul>
                             <li><strong>Top 3 Names</strong></li>
                             ${recommendedNames.map(name => `<li>${name.name} (${name.rating}/10)</li>`).join('')}
                         </ul>
+                    </div>
+                </div>
+                <div>
+                    <!-- LIMITED OFFER -->
+                    <div class="module-card limited-offer">
+                        <div class="upgrade-label">✨ LIMITED OFFER</div>
+                        <h3>✨ LIMITED OFFER</h3>
+                        <ul>
+                            <li>Full report includes:</li>
+                            <li>Luckiest career paths</li>
+                            <li>2025 fortune forecast</li>
+                            <li>Ideal partner analysis</li>
+                        </ul>
+                        <div class="upgrade-count">
+                            🔥 82 upgraded today
+                        </div>
+                        <a href="#pricing" class="upgrade-button" onclick="event.stopPropagation()">
+                            Upgrade Now →
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     `;
 
-    const upgradePrompt = `
-        <div style="
-            position: absolute;
-            right: 20px;
-            bottom: 70px;
-            width: 180px;
-            padding: 12px;
-            background: #FFF3E0;
-            border-radius: 6px;
-            border-left: 3px solid #FFA000;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            z-index: 100;
-        ">
-            <div style="
-                position: absolute;
-                top: -8px;
-                right: 15px;
-                background: #FF5722;
-                color: white;
-                padding: 2px 8px;
-                border-radius: 10px;
-                font-size: 10px;
-                font-weight: bold;
-            ">✨ LIMITED OFFER</div>
-            
-            <p style="
-                margin: 15px 0 8px 0;
-                font-size: 12px;
-                color: #5D4037;
-                line-height: 1.4;
-            ">
-                <b>Full report includes:</b><br>
-                • Luckiest career paths<br>
-                • 2025 fortune forecast<br>
-                • Ideal partner analysis
-            </p>
-            
-            <div style="
-                background: rgba(255,152,0,0.1);
-                padding: 6px;
-                border-radius: 4px;
-                margin-bottom: 10px;
-                text-align: center;
-                font-size: 11px;
-                color: #E65100;
-            ">
-                🔥 82 upgraded today
-            </div>
-            
-            <a href="#pricing" style="
-                display: block;
-                background: linear-gradient(to right, #FF9800, #FB8C00);
-                color: white;
-                padding: 8px;
-                border-radius: 4px;
-                text-align: center;
-                text-decoration: none;
-                font-weight: bold;
-                transition: all 0.2s;
-            " onclick="event.stopPropagation()"
-            onmouseover="this.style.transform='translateY(-2px)'
-            onmouseout="this.style.transform='none'">
-                Upgrade Now →
-            </a>
-        </div>
-    `;
-
     Swal.fire({
         title: 'Professional Name Analysis Report',
-        html: reportHTML + upgradePrompt,
+        html: reportHTML,
         width: '80%',
         backdrop: 'rgba(0,0,0,0.4)',
         showCloseButton: true,
