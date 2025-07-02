@@ -28,6 +28,77 @@ input[type="text"]:focus, input[type="date"]:focus, input[type="number"]:focus {
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
+/* 统一的模块卡片样式 */
+.module-card {
+    background: #FFF9F2;
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 3px solid #FFB74D;
+    margin-bottom: 20px;
+}
+
+.module-card h3 {
+    color: #D84315;
+    margin: 0 0 12px 0;
+    font-size: 15px;
+}
+
+.module-card ul {
+    margin: 0;
+    padding-left: 18px;
+    color: #5D4037;
+    line-height: 1.7;
+    font-size: 13px;
+}
+
+.module-card strong {
+    color: #D84315;
+    font-weight: 600;
+}
+
+/* LIMITED OFFER 专属样式 */
+.module-card.limited-offer {
+    position: relative;
+}
+
+.module-card.limited-offer .upgrade-label {
+    background: #FF5722;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: bold;
+    position: absolute;
+    top: -8px;
+    right: 15px;
+}
+
+.module-card.limited-offer .upgrade-count {
+    background: rgba(255,152,0,0.1);
+    padding: 6px;
+    border-radius: 4px;
+    margin: 12px 0;
+    text-align: center;
+    font-size: 11px;
+    color: #E65100;
+}
+
+.module-card.limited-offer .upgrade-button {
+    display: block;
+    background: linear-gradient(to right, #FF9800, #FB8C00);
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.module-card.limited-offer .upgrade-button:hover {
+    transform: translateY(-2px);
+}
+
 /* Card hover effects */
 .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
