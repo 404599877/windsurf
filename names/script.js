@@ -312,6 +312,49 @@ function calculateDestiny() {
         customClass: {
             confirmButton: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded',
             cancelButton: 'bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-4'
+        },
+        preConfirm: () => {
+            downloadPDF();
+            return false;
         }
+    });
+}
+
+// PDF导出功能
+function downloadPDF() {
+    const content = document.querySelector('.swal2-html-container') || document.querySelector('.swal2-content');
+    if (!content) {
+        Swal.fire({
+            title: '内容未找到',
+            text: '无法导出PDF，请重试。',
+            icon: 'error'
+        });
+        return;
+    }
+    // 临时加白色背景class
+    content.classList.add('pdf-blue-bg');
+    // 临时为综合评分区域加蓝色背景class
+    const scoreBox = content.querySelector('.bg-gradient-to-r, .score-box, .comprehensive-score, .score-bg, .bg-black');
+    if (scoreBox) scoreBox.classList.add('pdf-score-bg');
+    // 只隐藏升级按钮和升级计数
+    const pdfHideEls = content.querySelectorAll('.upgrade-button, .upgrade-count');
+    pdfHideEls.forEach(el => el.classList.add('pdf-export-hide'));
+    const jsPDFConstructor = window.jsPDF || window.jspdf.jsPDF;
+    const doc = new jsPDFConstructor({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4'
+    });
+    doc.html(content, {
+        callback: function (doc) {
+            content.classList.remove('pdf-blue-bg');
+            if (scoreBox) scoreBox.classList.remove('pdf-score-bg');
+            pdfHideEls.forEach(el => el.classList.remove('pdf-export-hide'));
+            doc.save('Name_Analysis_Report.pdf');
+        },
+        x: 10,
+        y: 10,
+        width: 190,
+        windowWidth: 800
     });
 }
