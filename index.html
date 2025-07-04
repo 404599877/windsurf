@@ -156,5 +156,48 @@
             </div>
         </div>
     </footer>
+
+    <!-- 星座与生肖符号散落效果 -->
+    <script>
+    (function() {
+      // 创建全屏覆盖的容器
+      const symbolContainer = document.createElement('div');
+      symbolContainer.style.position = 'fixed';
+      symbolContainer.style.left = 0;
+      symbolContainer.style.top = 0;
+      symbolContainer.style.width = '100vw';
+      symbolContainer.style.height = '100vh';
+      symbolContainer.style.pointerEvents = 'none';
+      symbolContainer.style.zIndex = 99999; // 保证在最上层
+      document.body.appendChild(symbolContainer);
+
+      // 十二生肖和十二星座符号
+      const zodiacSymbols = ['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷'];
+      const starSigns = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+      const allSymbols = zodiacSymbols.concat(starSigns);
+
+      // 让符号均匀分布在4x6的网格上，避免重叠
+      const rows = 4, cols = 6;
+      let idx = 0;
+      for(let r=0; r<rows; r++) {
+        for(let c=0; c<cols; c++) {
+          if(idx >= allSymbols.length) break;
+          const symbol = allSymbols[idx++];
+          const el = document.createElement('div');
+          el.textContent = symbol;
+          el.style.position = 'absolute';
+          // 网格基础 + 随机微调
+          el.style.left = (c * (100/(cols-1)) + (Math.random()-0.5)*6) + 'vw';
+          el.style.top = (r * (100/(rows-1)) + (Math.random()-0.5)*8) + 'vh';
+          el.style.fontSize = (32 + Math.random()*24) + 'px';
+          el.style.opacity = 0.22 + Math.random()*0.13;
+          el.style.transform = `rotate(${Math.random()*60-30}deg)`;
+          el.style.pointerEvents = 'none';
+          el.style.userSelect = 'none';
+          symbolContainer.appendChild(el);
+        }
+      }
+    })();
+    </script>
 </body>
 </html>
