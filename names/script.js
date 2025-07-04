@@ -106,9 +106,9 @@ function validateInputs() {
     if (!surnameInput.value || !yearInput.value || !monthInput.value || !dayInput.value) {
         Swal.fire({
             icon: 'error',
-            title: '输入错误',
-            text: '请填写所有字段！',
-            confirmButtonText: '确定'
+            title: 'Input Error',
+            text: 'Please fill in all fields!',
+            confirmButtonText: 'OK'
         });
         return false;
     }

@@ -1,0 +1,69 @@
+/* 符号容器样式 */
+.symbols-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* 符号基础样式 */
+.symbol {
+    position: absolute;
+    font-size: 2.2em;
+    opacity: 0.85;
+    pointer-events: none;
+    transition: transform 0.3s ease-out;
+    font-family: Arial, sans-serif;
+    /* 渐变发光效果 */
+    text-shadow:
+        0 0 8px #ffb347,
+        0 0 16px #a3cef7,
+        0 0 32px #fff;
+    /* 竖排时左右对齐 */
+}
+
+/* 十二星座符号 */
+.symbol.aries::before { content: '\2648'; }
+.symbol.taurus::before { content: '\2649'; }
+.symbol.gemini::before { content: '\264A'; }
+.symbol.cancer::before { content: '\264B'; }
+.symbol.leo::before { content: '\264C'; }
+.symbol.virgo::before { content: '\264D'; }
+.symbol.libra::before { content: '\264E'; }
+.symbol.scorpio::before { content: '\264F'; }
+.symbol.sagittarius::before { content: '\2650'; }
+.symbol.capricorn::before { content: '\2651'; }
+.symbol.aquarius::before { content: '\2652'; }
+.symbol.pisces::before { content: '\2653'; }
+
+/* 十二生肖符号 */
+.symbol.rat::before { content: '\1F400'; }
+.symbol.ox::before { content: '\1F402'; }
+.symbol.tiger::before { content: '\1F405'; }
+.symbol.rabbit::before { content: '\1F407'; }
+.symbol.dragon::before { content: '\1F432'; }
+.symbol.snake::before { content: '\1F40D'; }
+.symbol.horse::before { content: '\1F40E'; }
+.symbol.sheep::before { content: '\1F411'; }
+.symbol.monkey::before { content: '\1F412'; }
+.symbol.rooster::before { content: '\1F413'; }
+.symbol.dog::before { content: '\1F415'; }
+.symbol.pig::before { content: '\1F416'; }
+
+.symbols-container .symbol {
+    left: auto;
+    right: auto;
+}
+.symbols-container .symbol[style*='left: 2vw'] {
+    left: 2vw;
+    right: auto;
+    text-align: left;
+}
+.symbols-container .symbol[style*='right: 2vw'] {
+    right: 2vw;
+    left: auto;
+    text-align: right;
+}
