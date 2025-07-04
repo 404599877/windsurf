@@ -102,12 +102,40 @@
         <nav class="container mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
                 <a href="#" class="text-2xl font-bold text-gray-800">Destiny Name</a>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#features" class="text-gray-600 hover:text-gray-900">Features</a>
-                    <a href="#how-it-works" class="text-gray-600 hover:text-gray-900">How It Works</a>
-                    <a href="#pricing" class="text-gray-600 hover:text-gray-900">Pricing</a>
-                    <a href="#testimonials" class="text-gray-600 hover:text-gray-900">Testimonials</a>
-                    <a href="#contact" class="text-gray-600 hover:text-gray-900">Contact</a>
+                <div class="flex items-center space-x-8">
+                    <div class="hidden md:flex space-x-8">
+                        <a href="#features" class="text-gray-600 hover:text-gray-900">Features</a>
+                        <a href="#how-it-works" class="text-gray-600 hover:text-gray-900">How It Works</a>
+                        <a href="#pricing" class="text-gray-600 hover:text-gray-900">Pricing</a>
+                        <a href="#testimonials" class="text-gray-600 hover:text-gray-900">Testimonials</a>
+                        <a href="#contact" class="text-gray-600 hover:text-gray-900">Contact</a>
+                    </div>
+                    <a href="login.html" id="loginBtn" style="
+                        margin-left: 24px;
+                        background: #3B82F6;
+                        color: #fff;
+                        padding: 10px 24px;
+                        border-radius: 6px;
+                        font-size: 1rem;
+                        font-weight: 600;
+                        text-decoration: none;
+                        box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+                        transition: background 0.2s;
+                    " onmouseover="this.style.background='#2563eb'"
+                    onmouseout="this.style.background='#3B82F6'"
+                    >Login</a>
+                    <a href="#" id="registerBtn" style="
+                        margin-left: 12px;
+                        background: #60A5FA;
+                        color: #fff;
+                        padding: 10px 24px;
+                        border-radius: 6px;
+                        font-size: 1rem;
+                        font-weight: 600;
+                        text-decoration: none;
+                        box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+                        transition: background 0.2s;
+                    " onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#60A5FA'">Register</a>
                 </div>
                 <button class="md:hidden bg-blue-600 text-white px-4 py-2 rounded-lg">Get Started</button>
             </div>
@@ -516,6 +544,172 @@
             </div>
         </div>
     </div>
+    <!-- 登录弹窗（仅登录，无注册） -->
+    <div id="loginModal" style="
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.35);
+        z-index: 20000;
+        align-items: center; justify-content: center;
+    ">
+      <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 32px rgba(60,100,180,0.08); width: 95%; max-width: 350px; padding: 2.5rem 2rem 2rem 2rem; margin: auto; position: relative;">
+        <button id="closeLoginModal" style="position:absolute;top:10px;right:16px;font-size:1.5rem;background:none;border:none;cursor:pointer;color:#888;">×</button>
+        <h2 style="text-align:center;margin-bottom:1.5rem;color:#3B82F6;font-weight:700;">User Login</h2>
+        <div class="error-message" id="loginError" style="color:#e53e3e;text-align:center;margin-bottom:1rem;display:none;"></div>
+        <div class="success-message" id="loginSuccess" style="color:#22c55e;text-align:center;margin-bottom:1rem;display:none;"></div>
+        <form id="loginForm" autocomplete="off">
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label for="loginUsername">Username</label>
+            <input id="loginUsername" name="username" type="text" required autocomplete="username" lang="en" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;transition:border 0.2s;" oninvalid="this.setCustomValidity('Please fill out this field.')" oninput="this.setCustomValidity('')">
+          </div>
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="password" type="password" required autocomplete="current-password" lang="en" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;transition:border 0.2s;" oninvalid="this.setCustomValidity('Please fill out this field.')" oninput="this.setCustomValidity('')">
+          </div>
+          <button type="submit" class="auth-btn" style="width:100%;padding:0.8rem;background:#3B82F6;color:#fff;border:none;border-radius:6px;font-size:1.1rem;font-weight:600;cursor:pointer;margin-top:0.5rem;transition:background 0.2s;">Login</button>
+        </form>
+      </div>
+    </div>
+    <script>
+    // 打开弹窗
+    const loginBtn = document.getElementById('loginBtn');
+    const loginModal = document.getElementById('loginModal');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    loginBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      loginModal.style.display = 'flex';
+    });
+    const registerBtn = document.getElementById('registerBtn');
+    registerBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      loginModal.style.display = 'flex';
+    });
+    closeLoginModal.addEventListener('click', function() {
+      loginModal.style.display = 'none';
+    });
+    window.addEventListener('keydown', function(e){
+      if(e.key==='Escape') loginModal.style.display='none';
+    });
+    // 登录表单提交
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const loginSuccess = document.getElementById('loginSuccess');
+    loginForm.setAttribute('novalidate', 'novalidate');
+    loginForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      loginError.style.display = 'none';
+      loginSuccess.style.display = 'none';
+      if (!username || !password) {
+        loginError.textContent = 'Please fill out all fields.';
+        loginError.style.display = 'block';
+        return;
+      }
+      const res = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password_hash: password })
+      });
+      const data = await res.json();
+      if (data.code === 0) {
+        loginSuccess.textContent = 'Login successful!';
+        loginSuccess.style.display = 'block';
+        setTimeout(() => {
+          loginModal.style.display = 'none';
+        }, 1200);
+      } else {
+        loginError.textContent = data.msg || 'Login failed!';
+        loginError.style.display = 'block';
+      }
+    });
+    </script>
+    <!-- 注册弹窗 -->
+    <div id="registerModal" style="
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.35);
+        z-index: 20000;
+        align-items: center; justify-content: center;
+    ">
+      <div style="background: #fff; border-radius: 12px; box-shadow: 0 4px 32px rgba(60,100,180,0.08); width: 95%; max-width: 350px; padding: 2.5rem 2rem 2rem 2rem; margin: auto; position: relative;">
+        <button id="closeRegisterModal" style="position:absolute;top:10px;right:16px;font-size:1.5rem;background:none;border:none;cursor:pointer;color:#888;">×</button>
+        <h2 style="text-align:center;margin-bottom:1.5rem;color:#3B82F6;font-weight:700;">User Register</h2>
+        <div class="error-message" id="registerError" style="color:#e53e3e;text-align:center;margin-bottom:1rem;display:none;"></div>
+        <div class="success-message" id="registerSuccess" style="color:#22c55e;text-align:center;margin-bottom:1rem;display:none;"></div>
+        <form id="registerForm" autocomplete="off">
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label for="registerUsername">Username</label>
+            <input id="registerUsername" name="username" type="text" required autocomplete="username" lang="en" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;transition:border 0.2s;" oninvalid="this.setCustomValidity('Please fill out this field.')" oninput="this.setCustomValidity('')">
+          </div>
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label for="registerEmail">Email (optional)</label>
+            <input id="registerEmail" name="email" type="email" autocomplete="email" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;transition:border 0.2s;">
+          </div>
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label for="registerPassword">Password</label>
+            <input id="registerPassword" name="password" type="password" required autocomplete="new-password" lang="en" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;transition:border 0.2s;" oninvalid="this.setCustomValidity('Please fill out this field.')" oninput="this.setCustomValidity('')">
+          </div>
+          <button type="submit" class="auth-btn" style="width:100%;padding:0.8rem;background:#60A5FA;color:#fff;border:none;border-radius:6px;font-size:1.1rem;font-weight:600;cursor:pointer;margin-top:0.5rem;transition:background 0.2s;">Sign Up</button>
+        </form>
+      </div>
+    </div>
+    <script>
+    // Register弹窗逻辑
+    const registerModal = document.getElementById('registerModal');
+    const closeRegisterModal = document.getElementById('closeRegisterModal');
+    registerBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      registerModal.style.display = 'flex';
+    });
+    closeRegisterModal.addEventListener('click', function() {
+      registerModal.style.display = 'none';
+    });
+    window.addEventListener('keydown', function(e){
+      if(e.key==='Escape') registerModal.style.display='none';
+    });
+    // 注册表单提交
+    const registerForm = document.getElementById('registerForm');
+    const registerError = document.getElementById('registerError');
+    const registerSuccess = document.getElementById('registerSuccess');
+    registerForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const username = document.getElementById('registerUsername').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      registerError.style.display = 'none';
+      registerSuccess.style.display = 'none';
+      if (!username || !password) {
+        registerError.textContent = 'Please enter username and password.';
+        registerError.style.display = 'block';
+        return;
+      }
+      const res = await fetch('http://localhost:3000/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password_hash: password, email })
+      });
+      const data = await res.json();
+      if (data.code === 0) {
+        registerSuccess.textContent = 'Registration successful! Please login.';
+        registerSuccess.style.display = 'block';
+        setTimeout(() => {
+          registerModal.style.display = 'none';
+          // 自动弹出登录弹窗并填充用户名
+          loginModal.style.display = 'flex';
+          document.getElementById('loginUsername').value = username;
+          document.getElementById('loginPassword').value = '';
+          document.getElementById('loginError').textContent = '';
+          document.getElementById('loginSuccess').textContent = '';
+        }, 1200);
+      } else {
+        registerError.textContent = data.msg || 'Registration failed!';
+        registerError.style.display = 'block';
+      }
+    });
+    </script>
     <script src="symbols.js"></script>
 </body>
 </html>
