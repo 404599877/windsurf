@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
+const SALT_ROUNDS = 10;
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 // 允许跨域
 app.use(cors());
@@ -31,9 +33,9 @@ app.post('/api/analysis', (req, res) => {
   const sql = 'INSERT INTO analysis (name, birth, result) VALUES (?, ?, ?)';
   db.query(sql, [name, birth, result], (err, results) => {
     if (err) {
-      return res.status(500).json({ code: 1, msg: '数据库写入失败', error: err.message });
+      return res.status(500).json({ code: 1, msg: 'Database write failed', error: err.message });
     }
-    res.json({ code: 0, msg: '保存成功', id: results.insertId });
+    res.json({ code: 0, msg: 'Save successful', id: results.insertId });
   });
 });
 
@@ -41,36 +43,75 @@ app.post('/api/analysis', (req, res) => {
 app.get('/api/analysis', (req, res) => {
   db.query('SELECT * FROM analysis ORDER BY created_at DESC', (err, results) => {
     if (err) {
-      return res.status(500).json({ code: 1, msg: '数据库查询失败', error: err.message });
+      return res.status(500).json({ code: 1, msg: 'Database query failed', error: err.message });
     }
     res.json({ code: 0, data: results });
   });
 });
 
 // 用户注册
-app.post('/api/register', (req, res) => {
+app.post('/api/register', async (req, res) => {
   const { username, password_hash, email } = req.body;
-  const sql = 'INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)';
-  db.query(sql, [username, password_hash, email], (err, results) => {
-    if (err) {
-      return res.status(500).json({ code: 1, msg: '注册失败', error: err.message });
+  try {
+    // 邮箱格式校验
+    if (email) {
+      const emailRegex = /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ code: 1, msg: 'Invalid email format' });
+      }
+      // 先检查邮箱是否已存在
+      const checkEmailSql = 'SELECT id FROM users WHERE email = ?';
+      db.query(checkEmailSql, [email], async (err, results) => {
+        if (err) {
+          return res.status(500).json({ code: 1, msg: 'Database error', error: err.message });
+        }
+        if (results.length > 0) {
+          return res.status(400).json({ code: 1, msg: 'Email already registered' });
+        }
+        // 邮箱未被注册，继续注册流程
+        const hash = await bcrypt.hash(password_hash, SALT_ROUNDS);
+        const sql = 'INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)';
+        db.query(sql, [username, hash, email], (err, results) => {
+          if (err) {
+            return res.status(500).json({ code: 1, msg: 'Registration failed', error: err.message });
+          }
+          res.json({ code: 0, msg: 'Registration successful', id: results.insertId });
+        });
+      });
+    } else {
+      // 没有填写邮箱，直接注册
+      const hash = await bcrypt.hash(password_hash, SALT_ROUNDS);
+      const sql = 'INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)';
+      db.query(sql, [username, hash, email], (err, results) => {
+        if (err) {
+          return res.status(500).json({ code: 1, msg: 'Registration failed', error: err.message });
+        }
+        res.json({ code: 0, msg: 'Registration successful', id: results.insertId });
+      });
     }
-    res.json({ code: 0, msg: '注册成功', id: results.insertId });
-  });
+  } catch (err) {
+    res.status(500).json({ code: 1, msg: 'Password encryption failed', error: err.message });
+  }
 });
 
-// 用户登录（实际项目建议用bcrypt加密比对）
+// 用户登录
 app.post('/api/login', (req, res) => {
   const { username, password_hash } = req.body;
-  const sql = 'SELECT * FROM users WHERE username = ? AND password_hash = ?';
-  db.query(sql, [username, password_hash], (err, results) => {
+  const sql = 'SELECT * FROM users WHERE username = ?';
+  db.query(sql, [username], async (err, results) => {
     if (err) {
-      return res.status(500).json({ code: 1, msg: '登录失败', error: err.message });
+      return res.status(500).json({ code: 1, msg: 'Login failed', error: err.message });
     }
     if (results.length > 0) {
-      res.json({ code: 0, msg: '登录成功', user: results[0] });
+      const user = results[0];
+      const match = await bcrypt.compare(password_hash, user.password_hash);
+      if (match) {
+        res.json({ code: 0, msg: 'Login successful', user });
+      } else {
+        res.json({ code: 1, msg: 'Incorrect username or password' });
+      }
     } else {
-      res.json({ code: 1, msg: '用户名或密码错误' });
+      res.json({ code: 1, msg: 'Incorrect username or password' });
     }
   });
 });

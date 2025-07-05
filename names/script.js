@@ -126,6 +126,108 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         calculateDestiny();
     });
+
+    // 登录弹窗和表单提交逻辑
+    const loginBtn = document.getElementById('loginBtn');
+    const loginModal = document.getElementById('loginModal');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    if (loginBtn && loginModal && closeLoginModal) {
+        loginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            loginModal.style.display = 'flex';
+        });
+        closeLoginModal.addEventListener('click', function() {
+            loginModal.style.display = 'none';
+        });
+        window.addEventListener('keydown', function(e){
+            if(e.key==='Escape') loginModal.style.display='none';
+        });
+    }
+
+    // 登录表单提交
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const loginSuccess = document.getElementById('loginSuccess');
+    if (loginForm) {
+        loginForm.setAttribute('novalidate', 'novalidate');
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            loginError.style.display = 'none';
+            loginSuccess.style.display = 'none';
+            if (!username || !password) {
+                loginError.textContent = 'Please fill out all fields.';
+                loginError.style.display = 'block';
+                return;
+            }
+            try {
+                const res = await fetch('http://localhost:3001/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password_hash: password })
+                });
+                const data = await res.json();
+                if (data.code === 0) {
+                    loginSuccess.textContent = 'Login successful!';
+                    loginSuccess.style.display = 'block';
+                    setTimeout(() => {
+                        loginModal.style.display = 'none';
+                    }, 1200);
+                } else {
+                    loginError.textContent = data.msg || 'Incorrect username or password';
+                    loginError.style.display = 'block';
+                }
+                console.log('data.msg:', data.msg);
+            } catch (err) {
+                loginError.textContent = 'Network error, please try again later.';
+                loginError.style.display = 'block';
+            }
+        });
+    }
+
+    // 注册表单提交
+    const registerForm = document.getElementById('registerForm');
+    const registerError = document.getElementById('registerError');
+    const registerSuccess = document.getElementById('registerSuccess');
+    if (registerForm) {
+        registerForm.setAttribute('novalidate', 'novalidate');
+        registerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            registerError.style.display = 'none';
+            registerSuccess.style.display = 'none';
+            if (!username || !password) {
+                registerError.textContent = 'Please enter username and password.';
+                registerError.style.display = 'block';
+                return;
+            }
+            const res = await fetch('http://localhost:3001/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password_hash: password, email })
+            });
+            const data = await res.json();
+            if (data.code === 0) {
+                registerSuccess.textContent = 'Registration successful! Please login.';
+                registerSuccess.style.display = 'block';
+                setTimeout(() => {
+                    registerModal.style.display = 'none';
+                    // 自动弹出登录弹窗并填充用户名
+                    loginModal.style.display = 'flex';
+                    document.getElementById('loginUsername').value = username;
+                    document.getElementById('loginPassword').value = '';
+                    document.getElementById('loginError').textContent = '';
+                    document.getElementById('loginSuccess').textContent = '';
+                }, 1200);
+            } else {
+                registerError.textContent = data.msg || 'Registration failed!';
+                registerError.style.display = 'block';
+            }
+        });
+    }
 });
 
 // 生成名字
