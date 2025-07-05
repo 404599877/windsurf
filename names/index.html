@@ -136,6 +136,16 @@
                         box-shadow: 0 2px 8px rgba(59,130,246,0.08);
                         transition: background 0.2s;
                     " onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#60A5FA'">Register</a>
+                    <div id="userMenuContainer" style="display:none;position:relative;">
+                        <img id="userAvatar" src="" alt="User Avatar" style="width:32px;height:32px;border-radius:50%;object-fit:cover;margin-left:16px;vertical-align:middle;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.10);">
+                        <div id="userMenuDropdown" style="display:none;position:absolute;left:50%;transform:translateX(-50%);top:44px;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 8px 32px rgba(60,100,180,0.10);min-width:220px;z-index:999;padding:0.5rem 0;">
+                            <div style="padding:18px 22px 10px 22px;border-bottom:1px solid #f0f0f0;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                                <div id="userMenuUsername" style="font-weight:700;font-size:1.13em;color:#222;letter-spacing:0.01em;margin-bottom:16px;"></div>
+                                <div id="userMenuEmail" style="font-size:0.98em;color:#888;margin-top:0;word-break:break-all;"></div>
+                            </div>
+                            <button id="logoutBtn" style="width:calc(100% - 32px);margin:14px 16px 10px 16px;padding:10px 0;background:#3B82F6;border:none;color:#fff;font-weight:600;cursor:pointer;border-radius:8px;font-size:1.05em;transition:background 0.18s;box-shadow:0 2px 8px rgba(59,130,246,0.08);">Logout</button>
+                        </div>
+                    </div>
                 </div>
                 <button class="md:hidden bg-blue-600 text-white px-4 py-2 rounded-lg">Get Started</button>
             </div>
@@ -314,7 +324,7 @@
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" class="w-full bg-white text-blue-600 font-bold py-3 rounded-lg hover:bg-gray-100 transition duration-200">Calculate Your Destiny</button>
+                        <button id="calculateBtn" type="submit" class="w-full bg-white text-blue-600 font-bold py-3 rounded-lg hover:bg-gray-100 transition duration-200">Calculate Your Destiny</button>
                     </form>
                 </div>
             </div>
@@ -607,7 +617,7 @@
         loginError.style.display = 'block';
         return;
       }
-      const res = await fetch('http://localhost:3000/api/login', {
+      const res = await fetch('http://localhost:3001/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password_hash: password })
@@ -620,9 +630,10 @@
           loginModal.style.display = 'none';
         }, 1200);
       } else {
-        loginError.textContent = data.msg || 'Login failed!';
+        loginError.textContent = data.msg || 'Incorrect username or password';
         loginError.style.display = 'block';
       }
+      console.log('data.msg:', data.msg);
     });
     </script>
     <!-- 注册弹窗 -->
@@ -646,7 +657,7 @@
           </div>
           <div class="form-group" style="margin-bottom:1.2rem;">
             <label for="registerEmail">Email (optional)</label>
-            <input id="registerEmail" name="email" type="email" autocomplete="email" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;transition:border 0.2s;">
+            <input id="registerEmail" name="email" type="text" autocomplete="email" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;transition:border 0.2s;">
           </div>
           <div class="form-group" style="margin-bottom:1.2rem;">
             <label for="registerPassword">Password</label>
@@ -686,7 +697,7 @@
         registerError.style.display = 'block';
         return;
       }
-      const res = await fetch('http://localhost:3000/api/register', {
+      const res = await fetch('http://localhost:3001/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password_hash: password, email })
@@ -711,5 +722,6 @@
     });
     </script>
     <script src="symbols.js"></script>
+    <div id="loginSuccessToast" style="display:none;position:fixed;left:50%;top:calc(50% + 60px);transform:translate(-50%,0);background:#f3f4f6;color:#222;padding:10px 28px;border-radius:8px;font-size:0.98em;box-shadow:0 2px 12px rgba(60,60,60,0.08);z-index:99999;font-weight:500;letter-spacing:0.01em;">Login successful!</div>
 </body>
 </html>
