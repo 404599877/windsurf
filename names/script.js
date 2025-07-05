@@ -131,6 +131,69 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginBtn = document.getElementById('loginBtn');
     const loginModal = document.getElementById('loginModal');
     const closeLoginModal = document.getElementById('closeLoginModal');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const userAvatar = document.getElementById('userAvatar');
+    const registerBtn = document.getElementById('registerBtn');
+    const userMenuContainer = document.getElementById('userMenuContainer');
+    const userMenuDropdown = document.getElementById('userMenuDropdown');
+    const userMenuUsername = document.getElementById('userMenuUsername');
+    const userMenuEmail = document.getElementById('userMenuEmail');
+    const loginSuccessToast = document.getElementById('loginSuccessToast');
+
+    // 下拉菜单显示/隐藏逻辑
+    function toggleUserMenuDropdown(show) {
+        if (userMenuDropdown) userMenuDropdown.style.display = show ? 'block' : 'none';
+    }
+    if (userAvatar) userAvatar.onclick = () => toggleUserMenuDropdown(userMenuDropdown.style.display !== 'block');
+    document.addEventListener('click', function(e) {
+        if (userMenuDropdown && !userMenuContainer.contains(e.target)) {
+            userMenuDropdown.style.display = 'none';
+        }
+    });
+
+    // 检查登录状态
+    function checkLoginStatus() {
+        const user = localStorage.getItem('user');
+        if (user) {
+            if (userMenuContainer) userMenuContainer.style.display = '';
+            if (logoutBtn) logoutBtn.style.display = '';
+            if (loginModal) loginModal.style.display = 'none';
+            if (userAvatar) {
+                const userObj = JSON.parse(user);
+                userAvatar.src = userObj.avatar || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + encodeURIComponent(userObj.username || 'user');
+                userAvatar.style.display = '';
+                if (userMenuUsername) userMenuUsername.textContent = userObj.username || '';
+                if (userMenuEmail) userMenuEmail.textContent = userObj.email || '';
+            }
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (registerBtn) registerBtn.style.display = 'none';
+        } else {
+            if (userMenuContainer) userMenuContainer.style.display = 'none';
+            if (logoutBtn) logoutBtn.style.display = 'none';
+            if (userAvatar) userAvatar.style.display = 'none';
+            if (userMenuUsername) userMenuUsername.textContent = '';
+            if (userMenuEmail) userMenuEmail.textContent = '';
+            if (loginBtn) loginBtn.style.display = '';
+            if (registerBtn) registerBtn.style.display = '';
+            // 取消自动弹出登录框
+            // if (loginModal) loginModal.style.display = 'flex';
+        }
+    }
+
+    checkLoginStatus();
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('user');
+            checkLoginStatus();
+            if (userAvatar) userAvatar.style.display = 'none';
+            if (userMenuUsername) userMenuUsername.textContent = '';
+            if (userMenuEmail) userMenuEmail.textContent = '';
+            if (userMenuDropdown) userMenuDropdown.style.display = 'none';
+        });
+    }
+
     if (loginBtn && loginModal && closeLoginModal) {
         loginBtn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -171,8 +234,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.code === 0) {
                     loginSuccess.textContent = 'Login successful!';
                     loginSuccess.style.display = 'block';
+                    localStorage.setItem('user', JSON.stringify(data.user)); // 保存用户信息
+                    if (userMenuContainer) userMenuContainer.style.display = '';
+                    if (logoutBtn) logoutBtn.style.display = '';
+                    if (userAvatar) {
+                        userAvatar.src = data.user.avatar || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + encodeURIComponent(data.user.username || 'user');
+                        userAvatar.style.display = '';
+                    }
+                    if (userMenuUsername) userMenuUsername.textContent = data.user.username || '';
+                    if (userMenuEmail) userMenuEmail.textContent = data.user.email || '';
+                    if (loginBtn) loginBtn.style.display = 'none';
+                    if (registerBtn) registerBtn.style.display = 'none';
                     setTimeout(() => {
                         loginModal.style.display = 'none';
+                        showLoginSuccessToast();
                     }, 1200);
                 } else {
                     loginError.textContent = data.msg || 'Incorrect username or password';
@@ -225,6 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 registerError.textContent = data.msg || 'Registration failed!';
                 registerError.style.display = 'block';
+                console.log('register error msg:', data.msg);
             }
         });
     }
@@ -459,4 +535,22 @@ function downloadPDF() {
         width: 190,
         windowWidth: 800
     });
+}
+
+function showLoginSuccessToast() {
+    const toast = document.getElementById('loginSuccessToast');
+    const btn = document.getElementById('calculateBtn');
+    if (toast && btn) {
+        const rect = btn.getBoundingClientRect();
+        toast.style.position = 'fixed';
+        toast.style.left = (rect.left + rect.width / 2) + 'px';
+        toast.style.top = (rect.bottom + 16) + 'px'; // 16px下间距
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.background = '#3B82F6';
+        toast.style.color = '#fff';
+        toast.style.display = 'block';
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
 }
