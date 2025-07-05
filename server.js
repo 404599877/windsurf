@@ -3,6 +3,9 @@ const cors = require('cors');
 const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 
 const app = express();
 const PORT = 3001;
@@ -21,6 +24,21 @@ const db = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0
 });
+
+// 设置头像上传目录
+const avatarStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dir = path.join(__dirname, 'public', 'avatars');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: function (req, file, cb) {
+    const ext = path.extname(file.originalname);
+    const name = Date.now() + '-' + Math.round(Math.random() * 1E9) + ext;
+    cb(null, name);
+  }
+});
+const upload = multer({ storage: avatarStorage });
 
 // 健康检查
 app.get('/api/health', (req, res) => {
@@ -51,7 +69,7 @@ app.get('/api/analysis', (req, res) => {
 
 // 用户注册
 app.post('/api/register', async (req, res) => {
-  const { username, password_hash, email } = req.body;
+  const { username, password_hash, email, img_url } = req.body;
   try {
     // 邮箱格式校验
     if (email) {
@@ -70,8 +88,9 @@ app.post('/api/register', async (req, res) => {
         }
         // 邮箱未被注册，继续注册流程
         const hash = await bcrypt.hash(password_hash, SALT_ROUNDS);
-        const sql = 'INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)';
-        db.query(sql, [username, hash, email], (err, results) => {
+        const imgUrl = img_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`;
+        const sql = 'INSERT INTO users (username, password_hash, email, img_url) VALUES (?, ?, ?, ?)';
+        db.query(sql, [username, hash, email, imgUrl], (err, results) => {
           if (err) {
             return res.status(500).json({ code: 1, msg: 'Registration failed', error: err.message });
           }
@@ -81,8 +100,9 @@ app.post('/api/register', async (req, res) => {
     } else {
       // 没有填写邮箱，直接注册
       const hash = await bcrypt.hash(password_hash, SALT_ROUNDS);
-      const sql = 'INSERT INTO users (username, password_hash, email) VALUES (?, ?, ?)';
-      db.query(sql, [username, hash, email], (err, results) => {
+      const imgUrl = img_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`;
+      const sql = 'INSERT INTO users (username, password_hash, email, img_url) VALUES (?, ?, ?, ?)';
+      db.query(sql, [username, hash, email, imgUrl], (err, results) => {
         if (err) {
           return res.status(500).json({ code: 1, msg: 'Registration failed', error: err.message });
         }
@@ -115,6 +135,72 @@ app.post('/api/login', (req, res) => {
     }
   });
 });
+
+// 用户信息修改
+app.post('/api/user/update', async (req, res) => {
+  const { id, username, email, password, img_url } = req.body;
+  if (!id) return res.status(400).json({ code: 1, msg: 'User ID is required' });
+  // 检查用户名唯一
+  if (username) {
+    const checkUserSql = 'SELECT id FROM users WHERE username = ? AND id != ?';
+    const [userRows] = await db.promise().query(checkUserSql, [username, id]);
+    if (userRows.length > 0) {
+      return res.status(400).json({ code: 1, msg: 'Username already exists' });
+    }
+  }
+  // 检查邮箱唯一
+  if (email) {
+    const emailRegex = /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ code: 1, msg: 'Invalid email format' });
+    }
+    const checkEmailSql = 'SELECT id FROM users WHERE email = ? AND id != ?';
+    const [emailRows] = await db.promise().query(checkEmailSql, [email, id]);
+    if (emailRows.length > 0) {
+      return res.status(400).json({ code: 1, msg: 'Email already registered' });
+    }
+  }
+  // 构建更新SQL
+  let updateFields = [];
+  let updateValues = [];
+  if (username) { updateFields.push('username = ?'); updateValues.push(username); }
+  if (email) { updateFields.push('email = ?'); updateValues.push(email); }
+  if (img_url) { updateFields.push('img_url = ?'); updateValues.push(img_url); }
+  if (password) {
+    const hash = await bcrypt.hash(password, SALT_ROUNDS);
+    updateFields.push('password_hash = ?');
+    updateValues.push(hash);
+  }
+  if (updateFields.length === 0) {
+    return res.status(400).json({ code: 1, msg: 'No fields to update' });
+  }
+  updateValues.push(id);
+  const sql = `UPDATE users SET ${updateFields.join(', ')} WHERE id = ?`;
+  db.query(sql, updateValues, (err, results) => {
+    if (err) {
+      return res.status(500).json({ code: 1, msg: 'Update failed', error: err.message });
+    }
+    // 返回最新用户信息
+    db.query('SELECT id, username, email, img_url FROM users WHERE id = ?', [id], (err2, rows) => {
+      if (err2) {
+        return res.status(500).json({ code: 1, msg: 'Query user failed', error: err2.message });
+      }
+      res.json({ code: 0, msg: 'Update successful', user: rows[0] });
+    });
+  });
+});
+
+// 头像上传接口
+app.post('/api/user/upload-avatar', upload.single('avatar'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ code: 1, msg: 'No file uploaded' });
+  }
+  const url = `/avatars/${req.file.filename}`;
+  res.json({ code: 0, msg: 'Upload successful', url });
+});
+
+// 静态资源服务
+app.use('/avatars', express.static(path.join(__dirname, 'public', 'avatars')));
 
 // 启动服务
 app.listen(PORT, () => {
