@@ -304,6 +304,130 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // 1. 在下拉菜单添加Edit Profile按钮
+    if (userMenuDropdown) {
+        let editBtn = document.getElementById('editProfileBtn');
+        if (!editBtn) {
+            editBtn = document.createElement('button');
+            editBtn.id = 'editProfileBtn';
+            editBtn.textContent = 'Edit Profile';
+            editBtn.style = 'width:calc(100% - 32px);margin:10px 16px 0 16px;padding:10px 0;background:#f3f4f6;color:#3B82F6;font-weight:600;cursor:pointer;border:none;border-radius:8px;font-size:1.05em;transition:background 0.18s;box-shadow:0 2px 8px rgba(59,130,246,0.04);';
+            userMenuDropdown.insertBefore(editBtn, userMenuDropdown.firstChild);
+        }
+        editBtn.onclick = function(e) {
+            e.preventDefault();
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            document.getElementById('editUsername').value = user.username || '';
+            document.getElementById('editEmail').value = user.email || '';
+            document.getElementById('editAvatar').value = user.avatar || '';
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editProfileError').style.display = 'none';
+            document.getElementById('editProfileSuccess').style.display = 'none';
+            document.getElementById('editProfileModal').style.display = 'flex';
+            userMenuDropdown.style.display = 'none';
+        };
+    }
+    // 2. 关闭编辑弹窗
+    document.getElementById('closeEditProfileModal').onclick = function() {
+        document.getElementById('editProfileModal').style.display = 'none';
+    };
+    // 3. 表单提交
+    const editProfileForm = document.getElementById('editProfileForm');
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const id = user.id;
+            const username = document.getElementById('editUsername').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const password = document.getElementById('editPassword').value;
+            const avatar = document.getElementById('editAvatar').value.trim();
+            const errorDiv = document.getElementById('editProfileError');
+            const successDiv = document.getElementById('editProfileSuccess');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            if (!username) {
+                errorDiv.textContent = 'Username cannot be empty.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            const res = await fetch('http://localhost:3001/api/user/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, username, email, password, avatar })
+            });
+            const data = await res.json();
+            if (data.code === 0) {
+                successDiv.textContent = 'Profile updated successfully!';
+                successDiv.style.display = 'block';
+                localStorage.setItem('user', JSON.stringify(data.user));
+                setTimeout(() => {
+                    document.getElementById('editProfileModal').style.display = 'none';
+                    checkLoginStatus();
+                }, 1200);
+            } else {
+                errorDiv.textContent = data.msg || 'Update failed!';
+                errorDiv.style.display = 'block';
+            }
+        });
+    }
+
+    // 头像上传和预览
+    const editAvatarFile = document.getElementById('editAvatarFile');
+    const editAvatar = document.getElementById('editAvatar');
+    const editAvatarPreview = document.getElementById('editAvatarPreview');
+    if (editAvatarFile && editAvatar && editAvatarPreview) {
+        editAvatarFile.addEventListener('change', async function() {
+            const file = this.files[0];
+            if (!file) return;
+            // 预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                editAvatarPreview.src = e.target.result;
+                editAvatarPreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            // 上传
+            const formData = new FormData();
+            formData.append('avatar', file);
+            const res = await fetch('http://localhost:3001/api/user/upload-avatar', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (data.code === 0) {
+                editAvatar.value = data.url;
+            } else {
+                alert(data.msg || 'Upload failed!');
+            }
+        });
+        // 输入框变化时预览
+        editAvatar.addEventListener('input', function() {
+            if (editAvatar.value) {
+                editAvatarPreview.src = editAvatar.value;
+                editAvatarPreview.style.display = 'block';
+            } else {
+                editAvatarPreview.style.display = 'none';
+            }
+        });
+    }
+
+    // 自定义头像上传按钮和文件名显示
+    const customAvatarUploadBtn = document.getElementById('customAvatarUploadBtn');
+    const customAvatarFileName = document.getElementById('customAvatarFileName');
+    if (customAvatarUploadBtn && editAvatarFile && customAvatarFileName) {
+        customAvatarUploadBtn.onclick = function() {
+            editAvatarFile.click();
+        };
+        editAvatarFile.addEventListener('change', function() {
+            if (editAvatarFile.files.length > 0) {
+                customAvatarFileName.textContent = editAvatarFile.files[0].name;
+            } else {
+                customAvatarFileName.textContent = 'No file chosen';
+            }
+        });
+    }
 });
 
 // 生成名字
