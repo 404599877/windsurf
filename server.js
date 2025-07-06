@@ -88,7 +88,7 @@ app.post('/api/register', async (req, res) => {
         }
         // 邮箱未被注册，继续注册流程
         const hash = await bcrypt.hash(password_hash, SALT_ROUNDS);
-        const imgUrl = img_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`;
+        const imgUrl = img_url || `https://p5.ssl.qhimgs1.com/sdr/400__/t0489f1c219465f2685.jpg?seed=${encodeURIComponent(username)}`;
         const sql = 'INSERT INTO users (username, password_hash, email, img_url) VALUES (?, ?, ?, ?)';
         db.query(sql, [username, hash, email, imgUrl], (err, results) => {
           if (err) {
@@ -100,7 +100,7 @@ app.post('/api/register', async (req, res) => {
     } else {
       // 没有填写邮箱，直接注册
       const hash = await bcrypt.hash(password_hash, SALT_ROUNDS);
-      const imgUrl = img_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`;
+      const imgUrl = img_url || `https://p5.ssl.qhimgs1.com/sdr/400__/t0489f1c219465f2685.jpg?seed=${encodeURIComponent(username)}`;
       const sql = 'INSERT INTO users (username, password_hash, email, img_url) VALUES (?, ?, ?, ?)';
       db.query(sql, [username, hash, email, imgUrl], (err, results) => {
         if (err) {
