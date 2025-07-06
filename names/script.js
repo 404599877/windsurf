@@ -134,6 +134,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutBtn = document.getElementById('logoutBtn');
     const userAvatar = document.getElementById('userAvatar');
     const registerBtn = document.getElementById('registerBtn');
+    const registerModal = document.getElementById('registerModal');
+    const closeRegisterModal = document.getElementById('closeRegisterModal');
     const userMenuContainer = document.getElementById('userMenuContainer');
     const userMenuDropdown = document.getElementById('userMenuDropdown');
     const userMenuUsername = document.getElementById('userMenuUsername');
@@ -160,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (loginModal) loginModal.style.display = 'none';
             if (userAvatar) {
                 const userObj = JSON.parse(user);
-                userAvatar.src = userObj.avatar || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + encodeURIComponent(userObj.username || 'user');
+                userAvatar.src = userObj.avatar || userObj.img_url || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + encodeURIComponent(userObj.username || 'user');
                 userAvatar.style.display = '';
                 if (userMenuUsername) userMenuUsername.textContent = userObj.username || '';
                 if (userMenuEmail) userMenuEmail.textContent = userObj.email || '';
@@ -207,6 +209,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // 注册弹窗逻辑
+    if (registerBtn && registerModal && closeRegisterModal) {
+        registerBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            registerModal.style.display = 'flex';
+        });
+        closeRegisterModal.addEventListener('click', function() {
+            registerModal.style.display = 'none';
+        });
+        window.addEventListener('keydown', function(e){
+            if(e.key==='Escape') registerModal.style.display='none';
+        });
+    }
+
     // 登录表单提交
     const loginForm = document.getElementById('loginForm');
     const loginError = document.getElementById('loginError');
@@ -238,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (userMenuContainer) userMenuContainer.style.display = '';
                     if (logoutBtn) logoutBtn.style.display = '';
                     if (userAvatar) {
-                        userAvatar.src = data.user.avatar || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + encodeURIComponent(data.user.username || 'user');
+                        userAvatar.src = data.user.avatar || data.user.img_url || 'https://api.dicebear.com/7.x/identicon/svg?seed=' + encodeURIComponent(data.user.username || 'user');
                         userAvatar.style.display = '';
                     }
                     if (userMenuUsername) userMenuUsername.textContent = data.user.username || '';
@@ -305,29 +321,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 1. 在下拉菜单添加Edit Profile按钮
-    if (userMenuDropdown) {
-        let editBtn = document.getElementById('editProfileBtn');
-        if (!editBtn) {
-            editBtn = document.createElement('button');
-            editBtn.id = 'editProfileBtn';
-            editBtn.textContent = 'Edit Profile';
-            editBtn.style = 'width:calc(100% - 32px);margin:10px 16px 0 16px;padding:10px 0;background:#f3f4f6;color:#3B82F6;font-weight:600;cursor:pointer;border:none;border-radius:8px;font-size:1.05em;transition:background 0.18s;box-shadow:0 2px 8px rgba(59,130,246,0.04);';
-            userMenuDropdown.insertBefore(editBtn, userMenuDropdown.firstChild);
-        }
+    // Edit Profile按钮事件绑定，始终可用
+    const editBtn = document.getElementById('editProfileBtn');
+    if (editBtn) {
         editBtn.onclick = function(e) {
             e.preventDefault();
+            // 自动切换到Profile Tab
+            if (tabProfile && tabPassword && editProfileForm && changePasswordForm) {
+                tabProfile.style.color = '#3B82F6';
+                tabPassword.style.color = '#888';
+                editProfileForm.style.display = '';
+                changePasswordForm.style.display = 'none';
+            }
+            // 填充用户信息
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             document.getElementById('editUsername').value = user.username || '';
             document.getElementById('editEmail').value = user.email || '';
-            document.getElementById('editAvatar').value = user.avatar || '';
-            document.getElementById('editPassword').value = '';
+            document.getElementById('editAvatar').value = user.avatar || user.img_url || '';
             document.getElementById('editProfileError').style.display = 'none';
             document.getElementById('editProfileSuccess').style.display = 'none';
             document.getElementById('editProfileModal').style.display = 'flex';
-            userMenuDropdown.style.display = 'none';
+            if (document.getElementById('userMenuDropdown')) document.getElementById('userMenuDropdown').style.display = 'none';
         };
     }
+
     // 2. 关闭编辑弹窗
     document.getElementById('closeEditProfileModal').onclick = function() {
         document.getElementById('editProfileModal').style.display = 'none';
@@ -342,6 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const username = document.getElementById('editUsername').value.trim();
             const email = document.getElementById('editEmail').value.trim();
             const password = document.getElementById('editPassword').value;
+            const passwordConfirm = document.getElementById('editPasswordConfirm').value;
             const avatar = document.getElementById('editAvatar').value.trim();
             const errorDiv = document.getElementById('editProfileError');
             const successDiv = document.getElementById('editProfileSuccess');
@@ -352,10 +370,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorDiv.style.display = 'block';
                 return;
             }
+            if (password && password !== passwordConfirm) {
+                errorDiv.textContent = 'The two new passwords do not match.';
+                errorDiv.style.display = 'block';
+                return;
+            }
             const res = await fetch('http://localhost:3001/api/user/update', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id, username, email, password, avatar })
+                body: JSON.stringify({ id, username, email, password, img_url: avatar })
             });
             const data = await res.json();
             if (data.code === 0) {
@@ -428,6 +451,74 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Edit Profile 弹窗Tab切换逻辑
+    const tabProfile = document.getElementById('tabProfile');
+    const tabPassword = document.getElementById('tabPassword');
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    tabProfile.onclick = function() {
+        tabProfile.style.color = '#3B82F6';
+        tabPassword.style.color = '#888';
+        editProfileForm.style.display = '';
+        changePasswordForm.style.display = 'none';
+    };
+    tabPassword.onclick = function() {
+        tabProfile.style.color = '#888';
+        tabPassword.style.color = '#3B82F6';
+        editProfileForm.style.display = 'none';
+        changePasswordForm.style.display = '';
+    };
+    // 默认显示资料Tab
+    tabProfile.style.color = '#3B82F6';
+    tabPassword.style.color = '#888';
+    editProfileForm.style.display = '';
+    changePasswordForm.style.display = 'none';
+
+    // 密码修改表单提交逻辑
+    const changePasswordError = document.getElementById('changePasswordError');
+    const changePasswordSuccess = document.getElementById('changePasswordSuccess');
+    changePasswordForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const id = user.id;
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+        changePasswordError.style.display = 'none';
+        changePasswordSuccess.style.display = 'none';
+        if (!oldPassword || !newPassword || !confirmNewPassword) {
+            changePasswordError.textContent = 'All fields are required.';
+            changePasswordError.style.display = 'block';
+            return;
+        }
+        if (newPassword !== confirmNewPassword) {
+            changePasswordError.textContent = 'The two new passwords do not match.';
+            changePasswordError.style.display = 'block';
+            return;
+        }
+        if (oldPassword === newPassword) {
+            changePasswordError.textContent = 'New password cannot be the same as the old password.';
+            changePasswordError.style.display = 'block';
+            return;
+        }
+        // 提交到后端
+        const res = await fetch('http://localhost:3001/api/user/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, oldPassword, password: newPassword })
+        });
+        const data = await res.json();
+        if (data.code === 0) {
+            changePasswordSuccess.textContent = 'Password changed successfully!';
+            changePasswordSuccess.style.display = 'block';
+            document.getElementById('oldPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+        } else {
+            changePasswordError.textContent = data.msg || 'Password change failed!';
+            changePasswordError.style.display = 'block';
+        }
+    });
 });
 
 // 生成名字
