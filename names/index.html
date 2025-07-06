@@ -143,6 +143,7 @@
                                 <div id="userMenuUsername" style="font-weight:700;font-size:1.13em;color:#222;letter-spacing:0.01em;margin-bottom:16px;"></div>
                                 <div id="userMenuEmail" style="font-size:0.98em;color:#888;margin-top:0;word-break:break-all;"></div>
                             </div>
+                            <button id="editProfileBtn" style="width:calc(100% - 32px);margin:10px 16px 0 16px;padding:10px 0;background:#f3f4f6;color:#3B82F6;font-weight:600;cursor:pointer;border:none;border-radius:8px;font-size:1.05em;transition:background 0.18s;box-shadow:0 2px 8px rgba(59,130,246,0.04);">Edit Profile</button>
                             <button id="logoutBtn" style="width:calc(100% - 32px);margin:14px 16px 10px 16px;padding:10px 0;background:#3B82F6;border:none;color:#fff;font-weight:600;cursor:pointer;border-radius:8px;font-size:1.05em;transition:background 0.18s;box-shadow:0 2px 8px rgba(59,130,246,0.08);">Logout</button>
                         </div>
                     </div>
@@ -591,10 +592,7 @@
       loginModal.style.display = 'flex';
     });
     const registerBtn = document.getElementById('registerBtn');
-    registerBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      loginModal.style.display = 'flex';
-    });
+    // 移除这个冲突的事件监听器，注册按钮应该打开注册弹窗，不是登录弹窗
     closeLoginModal.addEventListener('click', function() {
       loginModal.style.display = 'none';
     });
@@ -667,66 +665,17 @@
         </form>
       </div>
     </div>
-    <script>
-    // Register弹窗逻辑
-    const registerModal = document.getElementById('registerModal');
-    const closeRegisterModal = document.getElementById('closeRegisterModal');
-    registerBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      registerModal.style.display = 'flex';
-    });
-    closeRegisterModal.addEventListener('click', function() {
-      registerModal.style.display = 'none';
-    });
-    window.addEventListener('keydown', function(e){
-      if(e.key==='Escape') registerModal.style.display='none';
-    });
-    // 注册表单提交
-    const registerForm = document.getElementById('registerForm');
-    const registerError = document.getElementById('registerError');
-    const registerSuccess = document.getElementById('registerSuccess');
-    registerForm.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const username = document.getElementById('registerUsername').value.trim();
-      const email = document.getElementById('registerEmail').value.trim();
-      const password = document.getElementById('registerPassword').value;
-      registerError.style.display = 'none';
-      registerSuccess.style.display = 'none';
-      if (!username || !password) {
-        registerError.textContent = 'Please enter username and password.';
-        registerError.style.display = 'block';
-        return;
-      }
-      const res = await fetch('http://localhost:3001/api/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password_hash: password, email })
-      });
-      const data = await res.json();
-      if (data.code === 0) {
-        registerSuccess.textContent = 'Registration successful! Please login.';
-        registerSuccess.style.display = 'block';
-        setTimeout(() => {
-          registerModal.style.display = 'none';
-          // 自动弹出登录弹窗并填充用户名
-          loginModal.style.display = 'flex';
-          document.getElementById('loginUsername').value = username;
-          document.getElementById('loginPassword').value = '';
-          document.getElementById('loginError').textContent = '';
-          document.getElementById('loginSuccess').textContent = '';
-        }, 1200);
-      } else {
-        registerError.textContent = data.msg || 'Registration failed!';
-        registerError.style.display = 'block';
-      }
-    });
-    </script>
+    <!-- 注册弹窗逻辑已移至script.js中处理 -->
     <script src="symbols.js"></script>
     <div id="loginSuccessToast" style="display:none;position:fixed;left:50%;top:calc(50% + 60px);transform:translate(-50%,0);background:#f3f4f6;color:#222;padding:10px 28px;border-radius:8px;font-size:0.98em;box-shadow:0 2px 12px rgba(60,60,60,0.08);z-index:99999;font-weight:500;letter-spacing:0.01em;">Login successful!</div>
     <div id="editProfileModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:20001;align-items:center;justify-content:center;">
       <div style="background:#fff;border-radius:14px;box-shadow:0 4px 32px rgba(60,100,180,0.10);width:95%;max-width:370px;padding:2.2rem 2rem 2rem 2rem;margin:auto;position:relative;">
         <button id="closeEditProfileModal" style="position:absolute;top:10px;right:16px;font-size:1.5rem;background:none;border:none;cursor:pointer;color:#888;">×</button>
         <h2 style="text-align:center;margin-bottom:1.5rem;color:#3B82F6;font-weight:700;">Edit Profile</h2>
+        <div style="display:flex;justify-content:center;margin-bottom:1.5rem;">
+          <button id="tabProfile" type="button" style="flex:1;padding:10px 0;border:none;background:#f3f4f6;color:#3B82F6;font-weight:600;cursor:pointer;border-radius:8px 0 0 8px;font-size:1.05em;">Profile</button>
+          <button id="tabPassword" type="button" style="flex:1;padding:10px 0;border:none;background:#f3f4f6;color:#888;font-weight:600;cursor:pointer;border-radius:0 8px 8px 0;font-size:1.05em;">Change Password</button>
+        </div>
         <form id="editProfileForm" autocomplete="off">
           <div class="form-group" style="margin-bottom:1.2rem;">
             <label for="editUsername">Username</label>
@@ -735,10 +684,6 @@
           <div class="form-group" style="margin-bottom:1.2rem;">
             <label for="editEmail">Email</label>
             <input id="editEmail" name="email" type="text" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;">
-          </div>
-          <div class="form-group" style="margin-bottom:1.2rem;">
-            <label for="editPassword">New Password</label>
-            <input id="editPassword" name="password" type="password" placeholder="Leave blank to keep current" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;">
           </div>
           <div class="form-group" style="margin-bottom:1.2rem;">
             <label for="editAvatar">Avatar URL</label>
@@ -755,6 +700,23 @@
           <div id="editProfileError" style="color:#e53e3e;text-align:center;margin-bottom:1rem;display:none;"></div>
           <div id="editProfileSuccess" style="color:#22c55e;text-align:center;margin-bottom:1rem;display:none;"></div>
           <button type="submit" class="auth-btn" style="width:100%;padding:0.8rem;background:#3B82F6;color:#fff;border:none;border-radius:6px;font-size:1.1rem;font-weight:600;cursor:pointer;margin-top:0.5rem;">Save Changes</button>
+        </form>
+        <form id="changePasswordForm" autocomplete="off" style="display:none;">
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label for="oldPassword">Old Password</label>
+            <input id="oldPassword" name="oldPassword" type="password" placeholder="Enter old password" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;">
+          </div>
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label for="newPassword">New Password</label>
+            <input id="newPassword" name="newPassword" type="password" placeholder="Enter new password" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;">
+          </div>
+          <div class="form-group" style="margin-bottom:1.2rem;">
+            <label for="confirmNewPassword">Confirm New Password</label>
+            <input id="confirmNewPassword" name="confirmNewPassword" type="password" placeholder="Re-enter new password" style="width:100%;padding:0.7rem;border:1px solid #d1d5db;border-radius:6px;font-size:1rem;outline:none;">
+          </div>
+          <div id="changePasswordError" style="color:#e53e3e;text-align:center;margin-bottom:1rem;display:none;"></div>
+          <div id="changePasswordSuccess" style="color:#22c55e;text-align:center;margin-bottom:1rem;display:none;"></div>
+          <button type="submit" class="auth-btn" style="width:100%;padding:0.8rem;background:#3B82F6;color:#fff;border:none;border-radius:6px;font-size:1.1rem;font-weight:600;cursor:pointer;margin-top:0.5rem;">Change Password</button>
         </form>
       </div>
     </div>

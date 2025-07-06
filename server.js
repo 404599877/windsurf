@@ -92,7 +92,17 @@ app.post('/api/register', async (req, res) => {
         const sql = 'INSERT INTO users (username, password_hash, email, img_url) VALUES (?, ?, ?, ?)';
         db.query(sql, [username, hash, email, imgUrl], (err, results) => {
           if (err) {
-            return res.status(500).json({ code: 1, msg: 'Registration failed', error: err.message });
+            // 常见唯一性冲突
+            if (err.code === 'ER_DUP_ENTRY') {
+              if (err.message.includes('username')) {
+                return res.status(400).json({ code: 1, msg: 'Username already exists' });
+              }
+              if (err.message.includes('email')) {
+                return res.status(400).json({ code: 1, msg: 'Email already registered' });
+              }
+              return res.status(400).json({ code: 1, msg: 'Duplicate entry' });
+            }
+            return res.status(500).json({ code: 1, msg: err.message || 'Registration failed' });
           }
           res.json({ code: 0, msg: 'Registration successful', id: results.insertId });
         });
@@ -104,7 +114,17 @@ app.post('/api/register', async (req, res) => {
       const sql = 'INSERT INTO users (username, password_hash, email, img_url) VALUES (?, ?, ?, ?)';
       db.query(sql, [username, hash, email, imgUrl], (err, results) => {
         if (err) {
-          return res.status(500).json({ code: 1, msg: 'Registration failed', error: err.message });
+          // 常见唯一性冲突
+          if (err.code === 'ER_DUP_ENTRY') {
+            if (err.message.includes('username')) {
+              return res.status(400).json({ code: 1, msg: 'Username already exists' });
+            }
+            if (err.message.includes('email')) {
+              return res.status(400).json({ code: 1, msg: 'Email already registered' });
+            }
+            return res.status(400).json({ code: 1, msg: 'Duplicate entry' });
+          }
+          return res.status(500).json({ code: 1, msg: err.message || 'Registration failed' });
         }
         res.json({ code: 0, msg: 'Registration successful', id: results.insertId });
       });
@@ -117,6 +137,7 @@ app.post('/api/register', async (req, res) => {
 // 用户登录
 app.post('/api/login', (req, res) => {
   const { username, password_hash } = req.body;
+  // 只查users表，不再关联names表
   const sql = 'SELECT * FROM users WHERE username = ?';
   db.query(sql, [username], async (err, results) => {
     if (err) {
@@ -126,6 +147,7 @@ app.post('/api/login', (req, res) => {
       const user = results[0];
       const match = await bcrypt.compare(password_hash, user.password_hash);
       if (match) {
+        user.avatar = user.img_url || `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(username)}`;
         res.json({ code: 0, msg: 'Login successful', user });
       } else {
         res.json({ code: 1, msg: 'Incorrect username or password' });
@@ -158,6 +180,17 @@ app.post('/api/user/update', async (req, res) => {
     const [emailRows] = await db.promise().query(checkEmailSql, [email, id]);
     if (emailRows.length > 0) {
       return res.status(400).json({ code: 1, msg: 'Email already registered' });
+    }
+  }
+  // 新增：新密码不能和旧密码一致
+  if (password) {
+    const [oldRows] = await db.promise().query('SELECT password_hash FROM users WHERE id = ?', [id]);
+    if (oldRows.length > 0) {
+      const oldHash = oldRows[0].password_hash;
+      const isSame = await bcrypt.compare(password, oldHash);
+      if (isSame) {
+        return res.status(400).json({ code: 1, msg: 'New password cannot be the same as the old password.' });
+      }
     }
   }
   // 构建更新SQL
