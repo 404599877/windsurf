@@ -551,8 +551,7 @@ function getFortuneAnalysis(month) {
         : "此生辰蕴含特殊能量，推荐使用中性名字";
 }
 
-// 计算命运
-function calculateDestiny() {
+async function calculateDestiny() {
     const surname = surnameInput.value;
     const year = yearInput.value;
     const month = monthInput.value;
@@ -560,6 +559,174 @@ function calculateDestiny() {
 
     if (!validateInputs()) {
         return;
+    }
+
+    // 优先调用后端AI接口
+    try {
+        const res = await fetch('http://localhost:3010/api/ai-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: surname, birth: `${year}-${month}-${day}` })
+        });
+        if (!res.ok) throw new Error('AI接口请求失败');
+        const data = await res.json();
+        // 兼容AI返回的字段
+        // 字段兜底函数
+        function safe(val) {
+            return (val === undefined || val === null || val === "") ? "-" : val;
+        }
+        const reportHTML = `
+            <div>
+                <h3 class="font-bold text-lg">Professional Name Analysis Report</h3>
+                <div style="text-align:center;font-size:18px;font-weight:600;">${surname} Name Analysis Report</div>
+                <div style="text-align:center;">Birth Date: ${year}-${month}-${day}</div>
+                <hr class="my-2">
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-6 rounded-lg mb-8">
+                    <div class="flex flex-col items-center">
+                        <h4 class="text-2xl font-bold mb-4">Comprehensive Score</h4>
+                        <div class="flex flex-col items-center mb-2">
+                            <div class="text-4xl font-bold mb-2">${safe(data.score)}</div>
+                            <div class="text-lg">${safe(data.rating)}</div>
+                        </div>
+                        <div class="flex flex-row gap-8 mt-2">
+                            <div class="text-center mx-4">
+                                <div class="text-lg font-semibold mb-1">Elements Score</div>
+                                <div class="text-2xl font-bold">${safe(data.elements)}</div>
+                            </div>
+                            <div class="text-center mx-4">
+                                <div class="text-lg font-semibold mb-1">Purple Star Score</div>
+                                <div class="text-2xl font-bold">${safe(data.ziwwei)}</div>
+                            </div>
+                            <div class="text-center mx-4">
+                                <div class="text-lg font-semibold mb-1">Astrology Score</div>
+                                <div class="text-2xl font-bold">${safe(data.astro)}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-6 w-full">
+                    <div class="module-card">
+                        <h3>Elements Analysis</h3>
+                        <ul>
+                            <li><strong>Elements Pattern</strong></li>
+                            <li><strong>Beneficial Elements:</strong> ${safe(data.beneficial_elements)}</li>
+                            <li><strong>Deficient Element:</strong> ${safe(data.deficient_element)}</li>
+                            <li><strong>Prosperous Element:</strong> ${safe(data.prosperous_element)}</li>
+                        </ul>
+                    </div>
+                    <div class="module-card">
+                        <h3>Purple Star Astrology</h3>
+                        <ul>
+                            <li><strong>Key Palaces</strong></li>
+                            <li>Life Palace: ${safe(data.life_palace)}</li>
+                            <li>Wealth Palace: ${safe(data.wealth_palace)}</li>
+                            <li>Career Palace: ${safe(data.career_palace)}</li>
+                        </ul>
+                    </div>
+                    <div class="module-card">
+                        <h3>Western Astrology</h3>
+                        <ul>
+                            <li><strong>Key Signs</strong></li>
+                            <li>Sun Sign: ${safe(data.sun_sign)}</li>
+                            <li>Moon Sign: ${safe(data.moon_sign)}</li>
+                            <li>Ascendant: ${safe(data.ascendant)}</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-6 w-full mt-6">
+                    <div class="module-card">
+                        <h3>Key Considerations</h3>
+                        <ul>
+                            <li>Elements Balance: ${safe(data.elements_balance)}</li>
+                            <li>Purple Star Influence: ${safe(data.purple_star_influence)}</li>
+                            <li>Zodiac Harmony: ${safe(data.zodiac_harmony)}</li>
+                        </ul>
+                    </div>
+                    <div class="module-card">
+                        <h3>Name Recommendations</h3>
+                        <ul>
+                            <li><strong>Top 3 Names</strong></li>
+                            ${(Array.isArray(data.recommend_names) ? data.recommend_names.slice(0,3) : []).map(name => `<li>${safe(name)}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 gap-6 w-full mt-6">
+                    <div class="module-card limited-offer">
+                        <div class="upgrade-label">✨ LIMITED OFFER</div>
+                        <h3>✨ LIMITED OFFER</h3>
+                        <ul>
+                            <li>Full report includes:</li>
+                            <li>Luckiest career paths</li>
+                            <li>2025 fortune forecast</li>
+                            <li>Ideal partner analysis</li>
+                        </ul>
+                        <div class="upgrade-count">
+                            🔥 82 upgraded today
+                        </div>
+                        <a href="#pricing" class="upgrade-button" onclick="event.stopPropagation()">
+                            Upgrade Now →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+        Swal.fire({
+            title: 'Professional Name Analysis Report',
+            html: reportHTML,
+            width: '80%',
+            backdrop: 'rgba(0,0,0,0.4)',
+            showCloseButton: true,
+            customClass: { container: 'max-w-4xl mx-auto', content: 'p-4' },
+            buttonsStyling: false,
+            confirmButtonText: 'Download Full Report',
+            confirmButtonAriaLabel: 'Download',
+            showCancelButton: true,
+            cancelButtonText: 'Cancel',
+            cancelButtonAriaLabel: 'Cancel',
+            customClass: {
+                confirmButton: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded',
+                cancelButton: 'bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-4',
+                actions: 'swal2-actions-fixed'
+            },
+            preConfirm: () => { downloadPDF(); return false; }
+        });
+        // 监听第一个空白区点击事件，关闭弹窗并跳转
+        setTimeout(() => {
+            // 监听第一个空白区点击事件，关闭弹窗并跳转
+            const firstEmpty = document.querySelector('.module-card:not(:has(*:not(:empty)))');
+            if (firstEmpty) {
+                firstEmpty.style.cursor = 'pointer';
+                firstEmpty.onclick = function() {
+                    Swal.close();
+                    const pricing = document.getElementById('pricing');
+                    if (pricing) {
+                        pricing.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        window.location.hash = '#pricing';
+                    }
+                };
+            }
+            // 监听Upgrade Now按钮点击事件，关闭弹窗并跳转
+            const upgradeBtn = document.querySelector('.upgrade-button');
+            if (upgradeBtn) {
+                upgradeBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    Swal.close();
+                    setTimeout(() => {
+                        const pricing = document.getElementById('pricing');
+                        if (pricing) {
+                            pricing.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                            window.location.hash = '#pricing';
+                        }
+                    }, 400); // 延迟，确保弹窗关闭后再滚动
+                };
+            }
+        }, 300);
+        return;
+    } catch (e) {
+        // AI接口失败，降级本地算法
+        console.warn('AI接口调用失败，使用本地算法', e);
     }
 
     // 计算八字五行
