@@ -519,6 +519,39 @@ document.addEventListener('DOMContentLoaded', function() {
             changePasswordError.style.display = 'block';
         }
     });
+
+    // PayPal安全支付适配
+    // 删除原有PayPal SDK相关代码，改为后端API跳转
+    async function startPay(plan) {
+      // plan: "basic" | "premium" | "vip"
+      try {
+        const res = await fetch('http://localhost:3001/api/create-paypal-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan })
+        });
+        const data = await res.json();
+        if (data && data.links) {
+          const approve = data.links.find(link => link.rel === 'approve');
+          if (approve && approve.href) {
+            window.location.href = approve.href;
+            return;
+          }
+        }
+        Swal.fire('支付链接获取失败，请稍后重试');
+      } catch (e) {
+        Swal.fire('网络错误，请稍后重试');
+      }
+    }
+
+    console.log('准备绑定支付按钮');
+    const btnBasic = document.getElementById('get-started-basic');
+    const btnPremium = document.getElementById('get-started-premium');
+    const btnVip = document.getElementById('get-started-vip');
+    console.log('btnBasic:', btnBasic, 'btnPremium:', btnPremium, 'btnVip:', btnVip);
+    if (btnBasic) btnBasic.onclick = () => { console.log('basic clicked'); startPay(0); };
+    if (btnPremium) btnPremium.onclick = () => { console.log('premium clicked'); startPay(1); };
+    if (btnVip) btnVip.onclick = () => { console.log('vip clicked'); startPay(2); };
 });
 
 // 生成名字

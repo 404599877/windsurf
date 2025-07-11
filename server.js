@@ -40,6 +40,62 @@ const avatarStorage = multer.diskStorage({
 });
 const upload = multer({ storage: avatarStorage });
 
+// PayPal集成
+const paypal = require('@paypal/checkout-server-sdk');
+const PAYPAL_CLIENT_ID = 'AVM6fk_52rpHi7h7SfukalTh1jchOXvGBrORkVPWMchoLCo5JPRgwrhUYrf8OrfA0pafwfOq2TEVowcb';
+const PAYPAL_CLIENT_SECRET = 'EJaqfCX4i_GsqoBsY1Br2joicxZumdVDFy57qGz08CHN4Ig48oPGsY8bivyMOD_1euyHiazsMtDrTEUd';
+function environment() {
+  return new paypal.core.SandboxEnvironment(PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET);
+}
+function client() {
+  return new paypal.core.PayPalHttpClient(environment());
+}
+const priceMap = [29, 49, 99];
+const descMap = ['Basic Report', 'Premium', 'VIP Package'];
+// 创建PayPal订单
+app.post('/api/create-paypal-order', async (req, res) => {
+  console.log('[PayPal] 收到支付请求:', req.body);
+  try {
+    const { plan } = req.body;
+    const amount = priceMap[plan];
+    const description = descMap[plan];
+    if (!amount) return res.status(400).json({ error: 'Invalid plan' });
+    const request = new paypal.orders.OrdersCreateRequest();
+    request.prefer("return=representation");
+    request.requestBody({
+      intent: 'CAPTURE',
+      purchase_units: [{
+        amount: { currency_code: 'USD', value: amount.toFixed(2) },
+        description
+      }]
+    });
+    const order = await client().execute(request);
+    console.log('[PayPal] 返回order对象:', order.result);
+    res.json(order.result);
+  } catch (err) {
+    console.error('[PayPal] Create Order Error:', err);
+    res.status(500).json({ error: 'PayPal create order failed' });
+  }
+});
+// 捕获PayPal订单
+app.post('/api/capture-paypal-order', async (req, res) => {
+  try {
+    const { orderID } = req.body;
+    if (!orderID) return res.status(400).json({ error: 'Missing orderID' });
+    const request = new paypal.orders.OrdersCaptureRequest(orderID);
+    request.requestBody({});
+    const capture = await client().execute(request);
+    if (capture.result.status === 'COMPLETED') {
+      res.json({ status: 'COMPLETED', details: capture.result });
+    } else {
+      res.json({ status: capture.result.status });
+    }
+  } catch (err) {
+    console.error('[PayPal] Capture Order Error:', err);
+    res.status(500).json({ error: 'PayPal capture order failed' });
+  }
+});
+
 // 健康检查
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Server is running.' });
