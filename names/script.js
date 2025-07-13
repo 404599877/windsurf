@@ -534,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data && data.links) {
           const approve = data.links.find(link => link.rel === 'approve');
           if (approve && approve.href) {
-            window.location.href = approve.href;
+            window.open(approve.href, '_blank');
             return;
           }
         }

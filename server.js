@@ -71,6 +71,27 @@ app.post('/api/create-paypal-order', async (req, res) => {
     });
     const order = await client().execute(request);
     console.log('[PayPal] 返回order对象:', order.result);
+    // 新增：保存订单到数据库
+    const orderId = order.result.id;
+    const status = order.result.status;
+    const now = new Date();
+    const sql = 'INSERT INTO orders (order_id, plan, amount, description, status, create_time, update_time, raw_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    db.query(sql, [
+      orderId,
+      plan,
+      amount,
+      description,
+      status,
+      now,
+      now,
+      JSON.stringify(order.result)
+    ], (err, results) => {
+      if (err) {
+        console.error('[DB] 保存订单失败:', err);
+      } else {
+        console.log('[DB] 订单已保存:', orderId);
+      }
+    });
     res.json(order.result);
   } catch (err) {
     console.error('[PayPal] Create Order Error:', err);
@@ -86,6 +107,16 @@ app.post('/api/capture-paypal-order', async (req, res) => {
     request.requestBody({});
     const capture = await client().execute(request);
     if (capture.result.status === 'COMPLETED') {
+      // 新增：更新订单状态
+      const sql = 'UPDATE orders SET status=?, update_time=?, raw_json=? WHERE order_id=?';
+      db.query(sql, [
+        capture.result.status,
+        new Date(),
+        JSON.stringify(capture.result),
+        orderID
+      ], (err) => {
+        if (err) console.error('[DB] 更新订单状态失败:', err);
+      });
       res.json({ status: 'COMPLETED', details: capture.result });
     } else {
       res.json({ status: capture.result.status });
