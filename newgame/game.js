@@ -16,9 +16,12 @@ function preload() {
 }
 
 function create() {
+    // 获取容器宽高
+    const width = this.sys.game.config.width;
+    const height = this.sys.game.config.height;
     // 创建两个可拖拽物品，居中显示并自适应缩放
-    const item1 = this.add.image(120, 130, "potato").setInteractive();
-    const item2 = this.add.image(280, 130, "potato").setInteractive();
+    const item1 = this.add.image(width / 2 - 60, height / 2, "potato").setInteractive();
+    const item2 = this.add.image(width / 2 + 60, height / 2, "potato").setInteractive();
     this.input.setDraggable(item1);
     this.input.setDraggable(item2);
 
