@@ -1,12 +1,9 @@
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    scene: {
-        preload: preload,
-        create: create,
-        update: update
-    },
+    width: 400,
+    height: 260,
+    parent: 'game-container',
+    scene: { preload, create, update },
     backgroundColor: "#f0f0f0"
 };
 const game = new Phaser.Game(config);
@@ -19,11 +16,20 @@ function preload() {
 }
 
 function create() {
-    // 创建两个可拖拽物品
-    const item1 = this.add.image(200, 300, "potato").setInteractive();
-    const item2 = this.add.image(600, 300, "potato").setInteractive();
+    // 创建两个可拖拽物品，居中显示并自适应缩放
+    const item1 = this.add.image(120, 130, "potato").setInteractive();
+    const item2 = this.add.image(280, 130, "potato").setInteractive();
     this.input.setDraggable(item1);
     this.input.setDraggable(item2);
+
+    // 图片自适应缩放
+    [item1, item2].forEach(item => {
+        item.setOrigin(0.5);
+        const scaleX = 80 / item.width;
+        const scaleY = 80 / item.height;
+        const scale = Math.min(scaleX, scaleY);
+        item.setScale(scale);
+    });
 
     // 拖拽跟随
     this.input.on('drag', function (pointer, gameObject, dragX, dragY) {
@@ -48,7 +54,7 @@ function findOverlappingItem(item, allItems) {
             const dx = other.x - item.x;
             const dy = other.y - item.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < 80) {
+            if (distance < 60) {
                 return other;
             }
         }
@@ -62,11 +68,11 @@ function mergeItems(item1, item2) {
     particles.createEmitter({
         frame: "red",
         x: item2.x, y: item2.y,
-        speed: { min: 100, max: 300 },
+        speed: { min: 100, max: 200 },
         angle: { min: 0, max: 360 },
-        scale: { start: 0.5, end: 0 },
-        lifespan: 600,
-        quantity: 20,
+        scale: { start: 0.4, end: 0 },
+        lifespan: 500,
+        quantity: 12,
         blendMode: "SCREEN"
     });
 
@@ -77,6 +83,11 @@ function mergeItems(item1, item2) {
     item1.destroy();
     item2.destroy();
 
-    // 生成新物品
-    this.add.image(item2.x, item2.y, "potato_level2");
+    // 生成新物品，居中显示并自适应缩放
+    const newItem = this.add.image(item2.x, item2.y, "potato_level2").setOrigin(0.5);
+    const scaleX = 90 / newItem.width;
+    const scaleY = 90 / newItem.height;
+    const scale = Math.min(scaleX, scaleY);
+    newItem.setScale(scale);
+    this.input.setDraggable(newItem);
 } 
